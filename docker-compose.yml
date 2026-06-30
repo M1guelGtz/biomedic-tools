@@ -1,0 +1,97 @@
+# docker-compose para BioMed Tools
+# Levanta toda la plataforma con un solo comando:  docker compose up -d
+#
+# Servicios:
+#   mysql     -> base de datos relacional (equipos, documentos, usuarios)
+#   qdrant    -> vector store para el RAG del asistente IA (se usa en la Fase 4)
+#   backend   -> API Node.js (arquitectura limpia)
+#   frontend  -> React + Vite servido con Nginx
+#
+# Las credenciales y claves se leen desde el archivo .env (copia .env.example a .env)
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: biomed-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      # Puerto del HOST (izquierda) separado del interno (3306) para evitar
+      # choques con un MySQL ya instalado en tu máquina.
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Los scripts de esta carpeta se ejecutan automáticamente la PRIMERA vez
+      # que se crea el contenedor (crean el esquema y datos de ejemplo).
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - biomed-net
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: biomed-qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_PORT:-6333}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - biomed-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: biomed-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Dentro de la red de Docker, el host de MySQL es el nombre del servicio
+      # y el puerto SIEMPRE es 3306 (el interno del contenedor), independiente
+      # del puerto que se exponga en el host.
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      QDRANT_URL: http://qdrant:6333
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    volumes:
+      # Carpeta donde se guardan los PDFs subidos (storage local por defecto).
+      - ./storage:/app/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - biomed-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:4000/api}
+    container_name: biomed-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - backend
+    networks:
+      - biomed-net
+
+volumes:
+  mysql_data:
+  qdrant_data:
+
+networks:
+  biomed-net:
+    driver: bridge
