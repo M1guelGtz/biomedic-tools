@@ -7,8 +7,9 @@ node_modules/
 # Build del frontend
 frontend/dist/
 
-# PDFs subidos en storage local
-storage/
+# PDFs subidos en storage local (SOLO la carpeta raíz, no el código fuente
+# que vive en backend/src/infrastructure/storage/).
+/storage/
 
 # Logs
 *.log
