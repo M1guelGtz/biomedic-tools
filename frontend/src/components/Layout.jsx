@@ -27,6 +27,7 @@ export default function Layout() {
             <NavLink to="/equipos" className={lc}>Equipos</NavLink>
             <NavLink to="/manuales" className={lc}>Manuales</NavLink>
             <NavLink to="/normativas" className={lc}>Normativas</NavLink>
+            {esAdmin && <NavLink to="/areas" className={lc}>Áreas</NavLink>}
           </div>
 
           <div className="nav-group">

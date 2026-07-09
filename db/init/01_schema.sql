@@ -27,19 +27,39 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- ---------------------------------------------------------------------
 --  Equipos médicos (núcleo del repositorio)
 -- ---------------------------------------------------------------------
+-- ---------------------------------------------------------------------
+--  Áreas (ubicaciones/servicios del hospital: UCI, Quirófano, Laboratorio…)
+--  Un equipo puede pertenecer a un área.
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS areas (
+  id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nombre        VARCHAR(150)    NOT NULL,
+  descripcion   VARCHAR(400)    NULL,
+  creado_en     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  actualizado_en TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_areas_nombre (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS equipos (
   id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   nombre        VARCHAR(200)    NOT NULL,
   modelo        VARCHAR(150)    NULL,
   fabricante    VARCHAR(150)    NULL,
   categoria     VARCHAR(120)    NULL,           -- ej: Monitoreo, Imagenología, Laboratorio
+  area_id       BIGINT UNSIGNED NULL,           -- área/servicio donde está el equipo
   descripcion   TEXT            NULL,
-  imagen_url    VARCHAR(500)    NULL,
+  imagen_url    VARCHAR(500)    NULL,           -- (heredado; no se usa)
+  imagen_clave  VARCHAR(500)    NULL,           -- clave de la imagen en el storage
   creado_en     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   actualizado_en TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_equipos_nombre (nombre),
-  KEY idx_equipos_categoria (categoria)
+  KEY idx_equipos_categoria (categoria),
+  KEY idx_equipos_area (area_id),
+  CONSTRAINT fk_equipos_area
+    FOREIGN KEY (area_id) REFERENCES areas (id)
+    ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------

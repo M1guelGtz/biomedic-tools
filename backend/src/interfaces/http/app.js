@@ -11,6 +11,7 @@ import { config } from '../../config/env.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { equipoRoutes } from './routes/equipo.routes.js';
+import { areaRoutes } from './routes/area.routes.js';
 import { documentoRoutes } from './routes/documento.routes.js';
 import { asistenteRoutes } from './routes/asistente.routes.js';
 import { notFoundHandler, errorHandler } from './middlewares/errorHandler.js';
@@ -27,6 +28,7 @@ export function createApp(deps = {}) {
   app.use('/api/health', healthRoutes());
   app.use('/api/auth', authRoutes(deps));
   app.use('/api/equipos', equipoRoutes(deps));
+  app.use('/api/areas', areaRoutes(deps));
   app.use('/api/documentos', documentoRoutes(deps));
   app.use('/api/asistente', asistenteRoutes(deps));
 

@@ -25,6 +25,11 @@ export class IEquipoRepository {
     throw new Error('No implementado: actualizar()');
   }
 
+  /** @returns {Promise<import('../entities/Equipo.js').Equipo>} */
+  async actualizarImagen(id, imagenClave) {
+    throw new Error('No implementado: actualizarImagen()');
+  }
+
   /** @returns {Promise<void>} */
   async eliminar(id) {
     throw new Error('No implementado: eliminar()');

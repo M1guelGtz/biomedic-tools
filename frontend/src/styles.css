@@ -402,10 +402,30 @@ input:focus, textarea:focus, select:focus {
 /* =====================================================================
    EQUIPOS
    ===================================================================== */
+/* Barra de filtro (por área) */
+.filtro-bar { display: flex; align-items: flex-end; gap: var(--s4); flex-wrap: wrap; margin-bottom: var(--s6); }
+.filtro-area { margin-bottom: 0; min-width: 220px; }
+.filtro-conteo { font-family: var(--font-mono); font-size: 0.8rem; padding-bottom: 10px; }
+
 .equipos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--s4); }
 .equipo-card { display: flex; flex-direction: column; }
+.equipo-thumb-wrap { margin: calc(-1 * var(--s6)) calc(-1 * var(--s6)) var(--s4); }
+.equipo-thumb {
+  width: 100%; height: 150px; object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0; display: block;
+  border-bottom: 1px solid var(--line);
+}
+.equipo-thumb-vacio {
+  display: grid; place-items: center; background: var(--surface-2);
+  color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em;
+}
 .equipo-cat { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--signal-ink); }
+.equipo-area { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); margin-bottom: var(--s2); }
 .equipo-card h3 { margin: 6px 0; }
+
+/* Vista previa de imagen en el modal */
+.img-preview-wrap { margin-bottom: var(--s3); }
+.img-preview { max-height: 160px; max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--line); }
 .equipo-card .muted { font-family: var(--font-mono); font-size: 0.82rem; }
 .equipo-desc { font-size: 0.9rem; color: var(--ink-soft); flex: 1; }
 .equipo-actions { display: flex; gap: var(--s2); margin-top: var(--s4); flex-wrap: wrap; }

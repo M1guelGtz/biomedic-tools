@@ -8,7 +8,9 @@
 import { config } from './config/env.js';
 import { createApp } from './interfaces/http/app.js';
 import { getPool, pingDatabase, closePool } from './infrastructure/database/mysqlPool.js';
+import { migrar } from './infrastructure/database/migrate.js';
 import { MySqlEquipoRepository } from './infrastructure/repositories/MySqlEquipoRepository.js';
+import { MySqlAreaRepository } from './infrastructure/repositories/MySqlAreaRepository.js';
 import { MySqlDocumentoRepository } from './infrastructure/repositories/MySqlDocumentoRepository.js';
 import { MySqlUsuarioRepository } from './infrastructure/repositories/MySqlUsuarioRepository.js';
 import { MySqlDocumentoChunkRepository } from './infrastructure/repositories/MySqlDocumentoChunkRepository.js';
@@ -20,6 +22,7 @@ import { crearProveedorIA } from './infrastructure/ai/providerFactory.js';
 import { QdrantVectorStore } from './infrastructure/vectorstore/QdrantVectorStore.js';
 import { PdfTextExtractor } from './infrastructure/pdf/PdfTextExtractor.js';
 import { createEquipoUseCases } from './application/equipos/equipoUseCases.js';
+import { createAreaUseCases } from './application/areas/areaUseCases.js';
 import { createDocumentoUseCases } from './application/documentos/documentoUseCases.js';
 import { createAuthUseCases } from './application/auth/authUseCases.js';
 import { ensureAdminUser } from './application/auth/ensureAdminUser.js';
@@ -34,9 +37,13 @@ async function bootstrap() {
   //    útil cuando MySQL aún está arrancando dentro de Docker).
   await esperarBaseDeDatos();
 
+  // 2b) Aplicar migraciones idempotentes (áreas, imagen de equipo, etc.).
+  await migrar(pool);
+
   // 3) Crear implementaciones concretas (infraestructura) e inyectarlas en los
   //    casos de uso (aplicación). Este es el corazón de la inversión de control.
   const equipoRepo = new MySqlEquipoRepository(pool);
+  const areaRepo = new MySqlAreaRepository(pool);
   const documentoRepo = new MySqlDocumentoRepository(pool);
   const usuarioRepo = new MySqlUsuarioRepository(pool);
   const chunkRepo = new MySqlDocumentoChunkRepository(pool);
@@ -73,7 +80,8 @@ async function bootstrap() {
     console.warn('[BioMed] No se pudo inicializar Qdrant:', e.message),
   );
 
-  const equipoUseCases = createEquipoUseCases({ equipoRepo });
+  const equipoUseCases = createEquipoUseCases({ equipoRepo, areaRepo, fileStorage });
+  const areaUseCases = createAreaUseCases({ areaRepo });
   const documentoUseCases = createDocumentoUseCases({
     documentoRepo,
     equipoRepo,
@@ -88,6 +96,7 @@ async function bootstrap() {
   const authMiddleware = createAuthMiddleware({ tokenService });
   const deps = {
     equipoUseCases,
+    areaUseCases,
     documentoUseCases,
     authUseCases,
     ragService,

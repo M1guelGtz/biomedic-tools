@@ -34,3 +34,33 @@ export function manejarUpload(req, res, next) {
     next();
   });
 }
+
+// ---- Imágenes (para la foto del equipo) ----
+const LIMITE_IMG_MB = 5;
+const MIMES_IMG = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+
+const uploadImagen = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: LIMITE_IMG_MB * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!MIMES_IMG.includes(file.mimetype)) {
+      cb(new ValidationError('Solo se permiten imágenes PNG, JPG, WEBP o GIF'));
+      return;
+    }
+    cb(null, true);
+  },
+}).single('imagen');
+
+export function manejarImagen(req, res, next) {
+  uploadImagen(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        next(new ValidationError(`La imagen supera el límite de ${LIMITE_IMG_MB} MB`));
+        return;
+      }
+      next(err);
+      return;
+    }
+    next();
+  });
+}

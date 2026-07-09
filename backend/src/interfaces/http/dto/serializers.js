@@ -9,10 +9,23 @@ export function equipoDTO(e) {
     modelo: e.modelo,
     fabricante: e.fabricante,
     categoria: e.categoria,
+    areaId: e.areaId ?? null,
+    areaNombre: e.areaNombre ?? null,
     descripcion: e.descripcion,
-    imagenUrl: e.imagenUrl,
+    // URL pública de la imagen (o null si no tiene). El binario se sirve aparte.
+    imagenUrl: e.imagenClave ? `/api/equipos/${e.id}/imagen` : null,
     creadoEn: e.creadoEn,
     actualizadoEn: e.actualizadoEn,
+  };
+}
+
+export function areaDTO(a) {
+  return {
+    id: a.id,
+    nombre: a.nombre,
+    descripcion: a.descripcion,
+    totalEquipos: a.totalEquipos ?? undefined,
+    creadoEn: a.creadoEn,
   };
 }
 

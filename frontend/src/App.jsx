@@ -10,6 +10,7 @@ import AsistentePage from './pages/AsistentePage.jsx';
 import DocumentosListadoPage from './pages/DocumentosListadoPage.jsx';
 import AcercaPage from './pages/AcercaPage.jsx';
 import UsuariosPage from './pages/UsuariosPage.jsx';
+import AreasPage from './pages/AreasPage.jsx';
 
 export default function App() {
   return (
@@ -51,6 +52,14 @@ export default function App() {
             />
             <Route path="asistente" element={<AsistentePage />} />
             <Route path="acerca" element={<AcercaPage />} />
+            <Route
+              path="areas"
+              element={
+                <ProtectedRoute soloAdmin>
+                  <AreasPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="usuarios"
               element={

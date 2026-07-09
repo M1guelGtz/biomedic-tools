@@ -5,8 +5,14 @@ import { useEffect, useRef } from 'react';
 export default function Modal({ titulo, onClose, children }) {
   const ref = useRef(null);
 
+  // Guardamos el onClose más reciente en una ref para que el efecto de montaje
+  // NO dependa de él. Si dependiera, cada render (p. ej. al escribir en un input)
+  // reejecutaría el efecto y el focus() robaría el foco del campo.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e) => { if (e.key === 'Escape') onCloseRef.current?.(); };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -15,7 +21,8 @@ export default function Modal({ titulo, onClose, children }) {
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [onClose]);
+    // Solo al montar/desmontar: el foco inicial se pone una vez, al abrir.
+  }, []);
 
   return (
     <div
